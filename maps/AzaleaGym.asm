@@ -7,12 +7,15 @@
 	const AZALEAGYM_TWIN2
 	const AZALEAGYM_GYM_GUIDE
 
+
 AzaleaGym_MapScripts:
 	def_scene_scripts
 
 	def_callbacks
 
 AzaleaGymBugsyScript:
+	checkevent EVENT_RESET_BUGSY
+	iftrue .resetgym
 	faceplayer
 	opentext
 	checkevent EVENT_BEAT_BUGSY
@@ -54,6 +57,22 @@ AzaleaGymBugsyScript:
 	waitbutton
 .NoRoomForFuryCutter:
 	closetext
+	end
+.resetgym
+	faceplayer
+	opentext
+	writetext BugsyText_INeverLose
+	waitbutton
+	closetext
+	winlosstext BugsyText_ResearchIncomplete, 0
+	loadtrainer BUGSY, BUGSY1
+	startbattle
+	reloadmapafterbattle
+	clearevent EVENT_RESET_BUGSY
+	setevent EVENT_BEAT_TWINS_AMY_AND_MAY
+	setevent EVENT_BEAT_BUG_CATCHER_BENNY
+	setevent EVENT_BEAT_BUG_CATCHER_AL
+	setevent EVENT_BEAT_BUG_CATCHER_JOSH
 	end
 
 AzaleaGymActivateRockets:
@@ -139,6 +158,76 @@ AzaleaGymGuideScript:
 	closetext
 	end
 
+AzaleaGymResetScript:
+	checkflag ENGINE_HIVEBADGE
+
+.loop
+	checkevent EVENT_RESET_BUGSY
+	iftrue .cancelreset
+	iffalse .ok
+
+.ok
+		reloadmap
+		writetext AzaleaGymResetText
+		waitbutton
+		closetext
+		loadmenu .MenuHeader
+		verticalmenu
+		closewindow
+		ifequal 1, .yes
+		ifequal 2, .no
+		sjump .Cancel
+
+.no
+	closetext
+	end
+
+.yes
+	setevent EVENT_RESET_BUGSY
+	clearevent EVENT_BEAT_TWINS_AMY_AND_MAY
+	clearevent EVENT_BEAT_BUG_CATCHER_BENNY
+	clearevent EVENT_BEAT_BUG_CATCHER_AL
+	clearevent EVENT_BEAT_BUG_CATCHER_JOSH
+	closetext
+	end
+
+.Cancel:
+	closetext
+	end
+
+.cancelreset
+	reloadmap
+	writetext AzaleaCancelResetText
+	waitbutton
+	closetext
+	loadmenu .MenuHeader
+	verticalmenu
+	closewindow
+	ifequal 1, .cancelgym
+	ifequal 2, .no
+	sjump .Cancel
+
+.cancelgym
+	setevent EVENT_BEAT_TWINS_AMY_AND_MAY
+	setevent EVENT_BEAT_BUG_CATCHER_BENNY
+	setevent EVENT_BEAT_BUG_CATCHER_AL
+	setevent EVENT_BEAT_BUG_CATCHER_JOSH
+	clearevent EVENT_RESET_BUGSY
+	closetext
+	end
+
+.MenuHeader:
+	db MENU_BACKUP_TILES ; flags
+	menu_coords 0, 12, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1
+	dw .MenuData
+	db 1 ; default option
+
+.MenuData:
+	db STATICMENU_CURSOR ; flags
+	db 2 ; items
+	db "YES@"
+	db "NO@"
+
 AzaleaGymStatue:
 	checkflag ENGINE_HIVEBADGE
 	iftrue .Beaten
@@ -146,6 +235,7 @@ AzaleaGymStatue:
 .Beaten:
 	gettrainername STRING_BUFFER_4, BUGSY, BUGSY1
 	jumpstd GymStatue2Script
+
 
 BugsyText_INeverLose:
 	text "I'm BUGSY!"
@@ -359,6 +449,16 @@ AzaleaGymGuideWinText:
 	cont "#MON is bright!"
 	done
 
+AzaleaGymResetText:
+	text "Do you want to"
+	line "re-challenge"
+	cont "this gym?"
+	done
+
+AzaleaCancelResetText:
+	text "Cancel"
+	line "re-challenge?"
+	done
 AzaleaGym_MapEvents:
 	db 0, 0 ; filler
 
@@ -380,3 +480,4 @@ AzaleaGym_MapEvents:
 	object_event  4, 10, SPRITE_TWIN, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 1, TrainerTwinsAmyandmay1, -1
 	object_event  5, 10, SPRITE_TWIN, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_TRAINER, 1, TrainerTwinsAmyandmay2, -1
 	object_event  7, 13, SPRITE_GYM_GUIDE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, AzaleaGymGuideScript, -1
+	object_event  7, 15, SPRITE_GYM_GUIDE, SPRITEMOVEDATA_STANDING_DOWN, 0, 0, -1, -1, PAL_NPC_RED, OBJECTTYPE_SCRIPT, 0, AzaleaGymResetScript, -1

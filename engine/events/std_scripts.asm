@@ -1762,6 +1762,7 @@ GymStatue1Script:
 	closetext
 	end
 
+
 GymStatue2Script:
 	getcurlandmarkname STRING_BUFFER_3
 	opentext
